@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -17,36 +17,182 @@ export class UsersService {
   ) {}
 
   async create({ user }: { user: CreateUserDto }): Promise<User> {
+    const { email, name, password } = user;
+
+    const existingUser = await this.userModel.findOne({ email: email });
+
+    if (existingUser) {
+      throw new HttpException(
+        `User with email: ${email} already exists`,
+        HttpStatus.CONFLICT,
+        {
+          cause: `Duplicate user with email: ${email}`,
+          description: 'User already exists',
+        },
+      );
+    }
+
+    const hashedPassword = await this.hashingProvider.hashPassword({
+      password,
+    });
+
     const updatedUserInfo = {
       ...user,
-      password: await this.hashingProvider.hashPassword({ password: user.password }),
+      password: hashedPassword,
     };
 
-    const newUser = new this.userModel(updatedUserInfo);
-    return await newUser.save();
+    let newUser: User;
+
+    try {
+      newUser = new this.userModel(updatedUserInfo);
+      await newUser.save();
+    } catch (error: any) {
+      throw new HttpException(
+        `Error while creating user: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+
+    return newUser;
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userModel.find({});
+    try {
+      return await this.userModel.find({});
+    } catch (error: any) {
+      throw new HttpException(
+        `Error fetching all user: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
   }
 
-  async findOne({ id }: { id: string }) {
-    return await this.userModel.findById(id);
+  async findOne({ id }: { id: string }): Promise<User> {
+    let user: User;
+
+    try {
+      user = await this.userModel.findById(id);
+    } catch (error: any) {
+      throw new HttpException(
+        `Error finding user: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+
+    if (!user) {
+      throw new HttpException(
+        `User with id: ${id} was not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return user;
   }
 
   async update({ id, user }: { id: string; user: UpdateUserDto }) {
-    const updatedUserInfo = {
-      ...user,
-      password: this.hashingProvider.hashPassword({ password: user.password }),
-    };
+    let existingUser: User;
 
-    return await this.userModel.findByIdAndUpdate(id, updatedUserInfo, {
-      new: true,
-      lean: true,
-    });
+    try {
+      existingUser = await this.userModel.findById(id);
+    } catch (error: any) {
+      throw new HttpException(
+        `Error while deleting user with id: ${id}`,
+        HttpStatus.BAD_REQUEST,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+
+    if (existingUser) {
+      throw new HttpException(
+        `User with id: ${id} does not exist`,
+        HttpStatus.CONFLICT,
+        {
+          cause: 'Invalid user id',
+          description: 'User does not exist',
+        },
+      );
+    }
+
+    let hashedPassword;
+
+    try {
+      hashedPassword = await this.hashingProvider.hashPassword({
+        password: user.password,
+      });
+    } catch (error: any) {
+      throw new HttpException(
+        `Error while hashing password: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+
+    try {
+      const updatedUserInfo = {
+        ...user,
+        password: hashedPassword,
+      };
+
+      return await this.userModel.findByIdAndUpdate(id, updatedUserInfo, {
+        new: true,
+        lean: true,
+      });
+    } catch (error: any) {
+      throw new HttpException(
+        `Error updating user information: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
   }
 
-  async removeUser({ id }: { id: string }): Promise<User> {
-    return await this.userModel.findOneAndDelete({ _id: id });
+  async removeUser({ id }: { id: string }) {
+    const existingUser = await this.userModel.findById(id);
+
+    if (existingUser) {
+      throw new HttpException(
+        `User with id: ${id} does not exist`,
+        HttpStatus.CONFLICT,
+        {
+          cause: 'Invalid user id',
+          description: 'User does not exist',
+        },
+      );
+    }
+
+    try {
+      await this.userModel.findByIdAndDelete(id);
+    } catch (error: any) {
+      throw new HttpException(
+        `Error while deleting user with id: ${id}`,
+        HttpStatus.BAD_REQUEST,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+    return { message: 'User deleted successfully' };
   }
 }

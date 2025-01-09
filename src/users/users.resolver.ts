@@ -18,21 +18,21 @@ export class UsersResolver {
     return this.usersService.findAll();
   }
 
-  @Query(() => User, { name: 'user' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.usersService.findOne({ id: id.toString() });
+  @Query(() => User, { name: 'getSingleUser' })
+  findOne(@Args('id') id: string) {
+    return this.usersService.findOne({ id });
   }
 
   @Mutation(() => User)
   updateUser(@Args('user') user: UpdateUserDto) {
     return this.usersService.update({
-      id: user.id.toString(),
+      id: user.id,
       user,
     });
   }
 
   @Mutation(() => User)
-  removeUser(@Args('id', { type: () => Int }) id: number) {
-    return this.usersService.removeUser({ id: id.toString() });
+  removeUser(@Args('id') id: string) {
+    return this.usersService.removeUser({ id });
   }
 }
