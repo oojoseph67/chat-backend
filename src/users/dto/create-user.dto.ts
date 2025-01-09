@@ -1,6 +1,6 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 import { Exclude, Transform } from 'class-transformer';
-import { IsEmail, MinLength } from 'class-validator';
+import { IsEmail, IsStrongPassword, MinLength } from 'class-validator';
 
 @InputType()
 export class CreateUserDto {
@@ -23,6 +23,7 @@ export class CreateUserDto {
     description: 'The password of the user',
     defaultValue: 'password123',
   })
+  @IsStrongPassword()
   @MinLength(8)
   password: string;
 }

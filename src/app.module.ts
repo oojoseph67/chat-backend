@@ -8,11 +8,14 @@ import databaseMongoConfig from './global/config/database-mongo.config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
+import { LoggerModule } from 'nestjs-pino';
 
 export const ENV = process.env.NODE_ENV;
 
 @Module({
   imports: [
+    UsersModule,
+
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env' : `.env.${ENV}.local`,
@@ -39,7 +42,27 @@ export const ENV = process.env.NODE_ENV;
       include: [],
     }),
 
-    UsersModule,
+    // LoggerModule.forRootAsync({
+    //   inject: [ConfigService],
+    //   useFactory: (configService: ConfigService) => {
+    //     const isProduction = configService.get('NODE_ENV') === 'production';
+
+    //     return {
+    //       pinoHttp: {
+    //         transport: isProduction
+    //           ? undefined
+    //           : {
+    //               target: 'pino-pretty',
+    //               options: {
+    //                 colorize: true,
+    //                 singleLine: true,
+    //               },
+    //             },
+    //         level: isProduction ? 'info' : 'debug',
+    //       },
+    //     };
+    //   },
+    // }),
   ],
   controllers: [AppController],
   providers: [AppService],
