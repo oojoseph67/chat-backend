@@ -3,8 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import environmentValidation from './config/environmentValidation';
-import databaseMongoConfig from './config/database-mongo.config';
+import environmentValidation from './global/config/environmentValidation';
+import databaseMongoConfig from './global/config/database-mongo.config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { UsersModule } from './users/users.module';
 
 export const ENV = process.env.NODE_ENV;
 
@@ -26,8 +29,21 @@ export const ENV = process.env.NODE_ENV;
         useUnifiedTopology: true,
       }),
     }),
+
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      playground: ENV !== 'production',
+      introspection: ENV !== 'production',
+      debug: ENV === 'development',
+      include: [],
+    }),
+
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
+// nest g resource users
