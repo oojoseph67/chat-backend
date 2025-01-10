@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import environmentValidation from './global/config/environmentValidation';
 import databaseMongoConfig from './global/config/database-mongo.config';
@@ -10,6 +10,10 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
+import jwtConfig from './global/config/jwt.config';
+import { JwtModule } from '@nestjs/jwt';
+import { HashingProvider } from './global/providers/hashing.provider';
+import { BcryptProvider } from './global/providers/bcrypt.provider';
 
 export const ENV = process.env.NODE_ENV;
 
@@ -20,7 +24,7 @@ export const ENV = process.env.NODE_ENV;
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env' : `.env.${ENV}.local`,
-      load: [databaseMongoConfig],
+      load: [databaseMongoConfig, jwtConfig],
       validationSchema: environmentValidation,
     }),
 
@@ -66,9 +70,29 @@ export const ENV = process.env.NODE_ENV;
     //     };
     //   },
     // }),
+
+    ConfigModule.forFeature(jwtConfig),
+    JwtModule.registerAsync({
+      imports: [ConfigModule.forFeature(jwtConfig)],
+      useFactory: async (jwtConfiguration: ConfigType<typeof jwtConfig>) => ({
+        secret: jwtConfiguration.jwtSecret,
+        signOptions: {
+          audience: jwtConfiguration.jwtTokenAudience,
+          issuer: jwtConfiguration.jwtTokenIssuer,
+          expiresIn: jwtConfiguration.jwtTokenExpiration,
+        },
+      }),
+      inject: [jwtConfig.KEY],
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: HashingProvider,
+      useClass: BcryptProvider,
+    },
+  ],
 })
 export class AppModule {}
 

@@ -200,7 +200,7 @@ export class UsersService {
     let user: User;
 
     try {
-      user = await this.userModel.findOne({ where: { email: email } });
+      user = await this.userModel.findOne({ email });
     } catch (error: any) {
       throw new HttpException(
         `Error fetching user by email: ${email}`,
@@ -229,13 +229,14 @@ export class UsersService {
   async verifyUser({ email, password }: { email: string; password: string }) {
     const user = await this.findUserByEmail({ email });
 
-    let isPasswordCorrect;
+    let isPasswordCorrect = false;
 
     try {
       isPasswordCorrect = await this.hashingProvider.comparePasswords({
         password,
         hashedPassword: user.password,
       });
+
     } catch (error: any) {
       throw new HttpException(
         `Error while verifying password for user with email: ${email}`,

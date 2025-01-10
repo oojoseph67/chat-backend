@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { UsersService } from 'src/users/users.service';
@@ -13,7 +13,11 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     super({ usernameField: 'email' }); // because we use email in our application
   }
 
-  async validate({ email, password }: { email: string; password: string }) {
+  async validate(email: string, password: string) {
+    if (!email || !password) {
+      throw new BadRequestException('Email and password are required');
+    }
+
     return await this.usersService.verifyUser({ email, password });
   }
 }

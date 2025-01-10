@@ -4,6 +4,11 @@ import { JwtService } from '@nestjs/jwt';
 import jwtConfig from 'src/global/config/jwt.config';
 import { User } from 'src/users/entities/user.entity';
 
+export interface UserTokenPayload {
+  sub: string;
+  email: string;
+}
+
 @Injectable()
 export class GenerateTokenProvider {
   constructor(
@@ -29,7 +34,7 @@ export class GenerateTokenProvider {
       {
         sub: userId,
         ...payload,
-      },
+      } as unknown as UserTokenPayload,
       {
         expiresIn: expiresIn,
         secret: this.jwtConfiguration.jwtSecret,
@@ -48,12 +53,12 @@ export class GenerateTokenProvider {
     user,
   }: {
     // user: Omit<UserPayload, 'iat' | 'exp' | 'aud' | 'iss'>;
-    user: User;
+    user: Omit<User, 'password' | 'name'>;
   }) {
     const [accessToken, refreshToken] = await Promise.all([
       await this.createToken({
         expiresIn: this.jwtConfiguration.jwtTokenExpiration,
-        userId: user.id,
+        userId: user._id as unknown as number,
         payload: {
           email: user.email,
         },
@@ -61,7 +66,7 @@ export class GenerateTokenProvider {
 
       await this.createToken({
         expiresIn: this.jwtConfiguration.jwtRefreshTokenExpiration,
-        userId: user.id,
+        userId: user._id as unknown as number,
       }),
     ]);
 
