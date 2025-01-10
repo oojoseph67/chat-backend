@@ -195,4 +195,69 @@ export class UsersService {
     }
     return { message: 'User deleted successfully' };
   }
+
+  async findUserByEmail({ email }: { email: string }): Promise<User> {
+    let user: User;
+
+    try {
+      user = await this.userModel.findOne({ where: { email: email } });
+    } catch (error: any) {
+      throw new HttpException(
+        `Error fetching user by email: ${email}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+
+    if (!user) {
+      throw new HttpException(
+        `User with email: ${email} does not exist`,
+        HttpStatus.NOT_FOUND,
+        {
+          cause: 'User not found',
+          description: 'User does not exist',
+        },
+      );
+    }
+
+    return user;
+  }
+
+  async verifyUser({ email, password }: { email: string; password: string }) {
+    const user = await this.findUserByEmail({ email });
+
+    let isPasswordCorrect;
+
+    try {
+      isPasswordCorrect = await this.hashingProvider.comparePasswords({
+        password,
+        hashedPassword: user.password,
+      });
+    } catch (error: any) {
+      throw new HttpException(
+        `Error while verifying password for user with email: ${email}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+
+    if (!isPasswordCorrect) {
+      throw new HttpException(
+        `Invalid credentials for user with email: ${email}`,
+        HttpStatus.UNAUTHORIZED,
+        {
+          cause: 'Invalid credentials',
+          description: 'Invalid credentials',
+        },
+      );
+    }
+
+    return user;
+  }
 }

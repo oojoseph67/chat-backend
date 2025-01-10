@@ -23,6 +23,6 @@ import { User, UserSchema } from './entities/user.entity';
       },
     ]), // for repository (entity) injection
   ],
-  exports: [HashingProvider],
+  exports: [HashingProvider, UsersService],
 })
 export class UsersModule {}

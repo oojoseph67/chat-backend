@@ -9,6 +9,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
 import { LoggerModule } from 'nestjs-pino';
+import { AuthModule } from './auth/auth.module';
 
 export const ENV = process.env.NODE_ENV;
 
@@ -41,6 +42,8 @@ export const ENV = process.env.NODE_ENV;
       debug: ENV === 'development',
       include: [],
     }),
+
+    AuthModule,
 
     // LoggerModule.forRootAsync({
     //   inject: [ConfigService],
