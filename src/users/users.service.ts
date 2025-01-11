@@ -259,6 +259,6 @@ export class UsersService {
       );
     }
 
-    return user;
+    return user; // saves in the response as response.user
   }
 }

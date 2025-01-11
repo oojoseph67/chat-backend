@@ -24,7 +24,7 @@ export class UsersResolver {
   }
 
   @Query(() => User, { name: 'getSingleUser' })
-  @UseGuards(GQLAuthGuard)
+  // @UseGuards(GQLAuthGuard)
   findOne(@Args('id') id: string) {
     return this.usersService.findOne({ id });
   }
@@ -36,7 +36,7 @@ export class UsersResolver {
     @CurrentUser() currentUser: UserTokenPayload,
   ) {
     return this.usersService.update({
-      id: currentUser.sub,
+      id: currentUser._id,
       user,
     });
   }
@@ -44,6 +44,16 @@ export class UsersResolver {
   @Mutation(() => User)
   @UseGuards(GQLAuthGuard)
   removeUser(@CurrentUser() currentUser: UserTokenPayload) {
-    return this.usersService.removeUser({ id: currentUser.sub });
+    return this.usersService.removeUser({ id: currentUser._id });
+  }
+
+  @Query(() => User, {
+    name: 'authenticatedUser',
+    description: 'Gets the authenticated user',
+  })
+  @UseGuards(GQLAuthGuard) // only authenticated users
+  getMe(@CurrentUser() user: UserTokenPayload) {
+    console.log('authenticatedUser', { user });
+    return user;
   }
 }

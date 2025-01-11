@@ -13,7 +13,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     super({ usernameField: 'email' }); // because we use email in our application
   }
 
-  async validate(email: string, password: string) {
+  async validate(email: string, password: string) { // expects this to be passed to the body
     if (!email || !password) {
       throw new BadRequestException('Email and password are required');
     }

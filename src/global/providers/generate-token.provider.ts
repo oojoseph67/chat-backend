@@ -5,8 +5,9 @@ import jwtConfig from 'src/global/config/jwt.config';
 import { User } from 'src/users/entities/user.entity';
 
 export interface UserTokenPayload {
-  sub: string;
+  _id: string;
   email: string;
+  name: string;
 }
 
 @Injectable()
@@ -32,7 +33,7 @@ export class GenerateTokenProvider {
     // generate jwt(refresh) token for authenticated user
     const signToken = await this.jwtService.signAsync(
       {
-        sub: userId,
+        _id: userId,
         ...payload,
       } as unknown as UserTokenPayload,
       {
@@ -53,7 +54,7 @@ export class GenerateTokenProvider {
     user,
   }: {
     // user: Omit<UserPayload, 'iat' | 'exp' | 'aud' | 'iss'>;
-    user: Omit<User, 'password' | 'name'>;
+    user: Omit<User, 'password'>;
   }) {
     const [accessToken, refreshToken] = await Promise.all([
       await this.createToken({
@@ -61,6 +62,7 @@ export class GenerateTokenProvider {
         userId: user._id as unknown as number,
         payload: {
           email: user.email,
+          name: user.name,
         },
       }),
 

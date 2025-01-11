@@ -1,14 +1,7 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  RequestTimeoutException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import { GenerateTokenProvider } from 'src/global/providers/generate-token.provider';
-import { HashingProvider } from 'src/global/providers/hashing.provider';
 import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
 
 export const CookieKey = 'Authentication';
 
@@ -17,9 +10,7 @@ export class AuthService {
   constructor(
     // injecting userService and accessTokenProvider
 
-    private userService: UsersService,
     private generateTokenProvider: GenerateTokenProvider,
-    private hashingProvider: HashingProvider,
   ) {}
 
   async login({ response, user }: { user: User; response: Response }) {
