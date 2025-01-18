@@ -25,4 +25,11 @@ export class AuthService {
       secure: true,
     });
   }
+
+  logout({ response }: { response: Response }) {
+    response.cookie('Authentication', '', {
+      httpOnly: true,
+      expires: new Date(),
+    });
+  }
 }

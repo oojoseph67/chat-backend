@@ -1,4 +1,11 @@
-import { Controller, HttpCode, HttpStatus, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { User } from 'src/users/entities/user.entity';
@@ -17,5 +24,11 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     return this.authService.login({ user, response });
+  }
+
+  @Post('/logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Res({ passthrough: true }) response: Response) {
+    return this.authService.logout({ response });
   }
 }
