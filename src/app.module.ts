@@ -14,6 +14,7 @@ import jwtConfig from './global/config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { HashingProvider } from './global/providers/hashing.provider';
 import { BcryptProvider } from './global/providers/bcrypt.provider';
+import { ChatsModule } from './chats/chats.module';
 
 export const ENV = process.env.NODE_ENV;
 
@@ -84,6 +85,7 @@ export const ENV = process.env.NODE_ENV;
       }),
       inject: [jwtConfig.KEY],
     }),
+    ChatsModule,
   ],
   controllers: [AppController],
   providers: [
