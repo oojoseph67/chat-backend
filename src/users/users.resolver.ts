@@ -53,7 +53,7 @@ export class UsersResolver {
   })
   @UseGuards(GQLAuthGuard) // only authenticated users
   getMe(@CurrentUser() user: UserTokenPayload) {
-    console.log('authenticatedUser', { user });
+    // console.log('authenticatedUser', { user });
     return user;
   }
 }

@@ -8,6 +8,10 @@ export class Chat {
   @Field(() => ID)
   _id: Types.ObjectId;
 
+  @Field(() => ID)
+  @Prop({ type: Types.ObjectId, required: true })
+  chatCreatorId: Types.ObjectId;
+
   @Field({})
   @Prop({
     type: Boolean,

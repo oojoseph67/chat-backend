@@ -10,7 +10,7 @@ export class CreateChatDto {
   isPrivate: boolean;
 
   @Field()
-  @IsString()
+  // @IsString()
   name: string;
 
   @Field(() => [String], { nullable: true })

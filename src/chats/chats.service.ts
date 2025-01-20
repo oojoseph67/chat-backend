@@ -14,10 +14,10 @@ export class ChatsService {
   ) {}
 
   async create({ chat, userId }: { chat: CreateChatDto; userId: string }) {
-    const updatedChat: Chat = {
+    const updatedChat = {
       ...chat,
       userIds: chat.userIds || [],
-      _id: userId as unknown as Types.ObjectId,
+      chatCreatorId: new Types.ObjectId(userId),
     };
 
     const createChat = new this.chatModel(updatedChat);
@@ -27,13 +27,15 @@ export class ChatsService {
     return createChat;
   }
 
-  findAll() {
-    return `This action returns all chats`;
+  async findAll(): Promise<Chat[]> {
+    return this.chatModel.find({}).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chat`;
+  async findOne(id: string): Promise<Chat> {
+    return this.chatModel.findById(id).exec();
   }
+
+  async findUserChat(id) {}
 
   update(id: number, updateChatDto: UpdateChatDto) {
     return `This action updates a #${id} chat`;

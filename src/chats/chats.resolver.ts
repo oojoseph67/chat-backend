@@ -15,19 +15,20 @@ export class ChatsResolver {
   @UseGuards(GQLAuthGuard)
   @Mutation(() => Chat)
   createChat(
-    @Args('createChat') chat: CreateChatDto,
+    @Args('chat') createChatDto: CreateChatDto,
     @CurrentUser() user: UserTokenPayload,
   ) {
-    return this.chatsService.create({ chat, userId: user._id });
+    console.log({ user });
+    return this.chatsService.create({ chat: createChatDto, userId: user._id });
   }
 
-  @Query(() => [Chat], { name: 'chats' })
+  @Query(() => [Chat], { name: 'getAllChats' })
   findAll() {
     return this.chatsService.findAll();
   }
 
-  @Query(() => Chat, { name: 'chat' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  @Query(() => Chat, { name: 'chatById' })
+  findOne(@Args('id') id: string) {
     return this.chatsService.findOne(id);
   }
 
