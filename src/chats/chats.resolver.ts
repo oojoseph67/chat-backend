@@ -27,7 +27,7 @@ export class ChatsResolver {
     return this.chatsService.findAll();
   }
 
-  @Query(() => Chat, { name: 'chatById' })
+  @Query(() => Chat, { name: 'getChatById' })
   findOne(@Args('id') id: string) {
     return this.chatsService.findOne(id);
   }
