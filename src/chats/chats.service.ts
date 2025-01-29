@@ -1,16 +1,9 @@
-import {
-  BadRequestException,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Chat } from './entities/chat.entity';
 import { Model, Types } from 'mongoose';
-import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ChatsService {
@@ -27,11 +20,16 @@ export class ChatsService {
         chatCreatorId: new Types.ObjectId(userId),
       };
 
-      const createChat = new this.chatModel(updatedChat);
+      // const createChat = new this.chatModel(updatedChat);
+      // createChat.save();
+      // return createChat;
 
-      createChat.save();
-
-      return createChat;
+      return this.chatModel.create({
+        ...chat,
+        userIds: chat.userIds || [],
+        chatCreatorId: new Types.ObjectId(userId),
+        messages: [],
+      });
     } catch (error: any) {
       throw new BadRequestException(error);
     }
