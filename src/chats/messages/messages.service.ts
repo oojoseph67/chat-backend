@@ -5,6 +5,7 @@ import { Chat } from '../entities/chat.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UserTokenPayload } from 'src/global/providers/generate-token.provider';
 import { Message } from './entities/message.entity';
+import { GetMessagesDto } from './dto/get-messages.dto';
 
 @Injectable()
 export class MessagesService {
@@ -18,14 +19,14 @@ export class MessagesService {
 
   async createMessage({
     createMessageDto,
-    // user,
+    user,
   }: {
     createMessageDto: CreateMessageDto;
-    // user: UserTokenPayload;
+    user: UserTokenPayload;
   }) {
     const { chatId, content } = createMessageDto;
-    // const userId = user._id;
-    const userId = '678224e7519d5305f983ddd0';
+    const userId = user._id;
+    // const userId = '678224e7519d5305f983ddd0';
 
     const message: Message = {
       _id: new Types.ObjectId(),
@@ -48,14 +49,50 @@ export class MessagesService {
         await this.messageModel.create(message);
         chat.messages.push(message);
         await chat.save();
+        return message;
       } else {
         throw new HttpException(
           `You dont belong to this chat`,
           HttpStatus.UNAUTHORIZED,
         );
       }
+    } catch (error: any) {
+      throw new HttpException(
+        `Failed to create message: Error: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+        {
+          cause: error.message,
+          description: error,
+        },
+      );
+    }
+  }
 
-      return message;
+  async getMessages({
+    getMessagesDto,
+    user,
+  }: {
+    getMessagesDto: GetMessagesDto;
+    user: UserTokenPayload
+  }) {
+    const userId = user._id;
+    // const userId = '678224e7519d5305f983ddd0';
+    const { chatId } = getMessagesDto;
+
+    try {
+      const chat = await this.chatModel.findById(chatId);
+
+      if (
+        chat.chatCreatorId.toString() === userId ||
+        chat.userIds.map((id) => id.toString()).includes(userId)
+      ) {
+        return chat.messages;
+      } else {
+        throw new HttpException(
+          `You dont belong to this chat`,
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
     } catch (error: any) {
       throw new HttpException(
         `Failed to create message: Error: ${error.message}`,
